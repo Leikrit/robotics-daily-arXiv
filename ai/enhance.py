@@ -244,8 +244,13 @@ def process_single_item(chain, item: Dict, language: str) -> Dict:
 def process_all_items(data: List[Dict], model_name: str, language: str, max_workers: int) -> List[Dict]:
     """并行处理所有数据项"""
     llm_kwargs = {"model": model_name}
+    thinking = os.environ.get("DEEPSEEK_THINKING", "disabled").strip().lower()
+    if model_name.startswith("deepseek"):
+        if thinking not in {"enabled", "disabled"}:
+            raise ValueError("DEEPSEEK_THINKING must be enabled or disabled")
+        llm_kwargs["extra_body"] = {"thinking": {"type": thinking}}
     reasoning_effort = os.environ.get("REASONING_EFFORT", "").strip()
-    if reasoning_effort:
+    if reasoning_effort and (not model_name.startswith("deepseek") or thinking == "enabled"):
         llm_kwargs["reasoning_effort"] = reasoning_effort
     llm = ChatOpenAI(**llm_kwargs)
     print('Connect to:', model_name, file=sys.stderr)
@@ -297,7 +302,7 @@ def process_all_items(data: List[Dict], model_name: str, language: str, max_work
 
 def main():
     args = parse_args()
-    model_name = os.environ.get("MODEL_NAME", 'gpt-5.6-luna')
+    model_name = os.environ.get("MODEL_NAME", 'deepseek-flash')
     language = os.environ.get("LANGUAGE", 'Chinese')
 
     # 检查并删除目标文件

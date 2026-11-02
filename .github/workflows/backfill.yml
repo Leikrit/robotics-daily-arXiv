@@ -63,20 +63,21 @@ jobs:
       matrix: ${{ fromJSON(needs.prepare.outputs.matrix) }}
     env:
       PYTHONUNBUFFERED: "1"
-      OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
-      OPENAI_BASE_URL: ${{ secrets.OPENAI_BASE_URL }}
+      OPENAI_API_KEY: ${{ secrets.DEEPSEEK_API_KEY || secrets.OPENAI_API_KEY }}
+      OPENAI_BASE_URL: ${{ vars.OPENAI_BASE_URL || secrets.OPENAI_BASE_URL || 'https://api.deepseek.com/v1' }}
       TOKEN_GITHUB: ${{ github.token }}
       LANGUAGE: ${{ vars.LANGUAGE || 'Chinese' }}
       CATEGORIES: ${{ vars.CATEGORIES || 'cs.RO,cs.AI,cs.LG,cs.CV' }}
-      MODEL_NAME: ${{ vars.MODEL_NAME || 'gpt-5.6-luna' }}
-      REASONING_EFFORT: ${{ vars.REASONING_EFFORT || 'medium' }}
+      MODEL_NAME: ${{ vars.MODEL_NAME || 'deepseek-flash' }}
+      REASONING_EFFORT: ${{ vars.REASONING_EFFORT || 'low' }}
+      DEEPSEEK_THINKING: ${{ vars.DEEPSEEK_THINKING || 'disabled' }}
       AI_MAX_WORKERS: ${{ vars.BACKFILL_AI_MAX_WORKERS || '4' }}
       AI_REQUEST_RETRIES: ${{ vars.AI_REQUEST_RETRIES || '3' }}
       AI_RETRY_BASE_SECONDS: ${{ vars.AI_RETRY_BASE_SECONDS || '2' }}
       AI_RETRY_MAX_SECONDS: ${{ vars.AI_RETRY_MAX_SECONDS || '60' }}
       AI_REQUEST_STAGGER_SECONDS: ${{ vars.AI_REQUEST_STAGGER_SECONDS || '0.5' }}
       TOPIC_FILTER_ENABLED: ${{ vars.TOPIC_FILTER_ENABLED || 'true' }}
-      TOPIC_FILTER_MODEL_NAME: ${{ vars.TOPIC_FILTER_MODEL_NAME || vars.MODEL_NAME || 'gpt-5.6-luna' }}
+      TOPIC_FILTER_MODEL_NAME: ${{ vars.TOPIC_FILTER_MODEL_NAME || vars.MODEL_NAME || 'deepseek-flash' }}
       TOPIC_FILTER_MAX_WORKERS: ${{ vars.BACKFILL_TOPIC_FILTER_MAX_WORKERS || '2' }}
       TOPIC_FILTER_MIN_CONFIDENCE: ${{ vars.TOPIC_FILTER_MIN_CONFIDENCE || '0.65' }}
       TOPIC_FILTER_KEEP_UNCERTAIN: ${{ vars.TOPIC_FILTER_KEEP_UNCERTAIN || 'false' }}
@@ -102,7 +103,7 @@ jobs:
 
       - name: Validate configuration
         run: |
-          test -n "$OPENAI_API_KEY" || { echo "OPENAI_API_KEY is not configured" >&2; exit 1; }
+          test -n "$OPENAI_API_KEY" || { echo "Add DEEPSEEK_API_KEY in Settings > Secrets and variables > Actions" >&2; exit 1; }
           test -n "$OPENAI_BASE_URL" || { echo "OPENAI_BASE_URL is not configured" >&2; exit 1; }
           printf 'Chunk: %s through %s\nModel: %s (%s)\nWorkers: topic=%s, analysis=%s\n' \
             '${{ matrix.start }}' '${{ matrix.end }}' "$MODEL_NAME" "$REASONING_EFFORT" \

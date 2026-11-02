@@ -25,7 +25,8 @@ generated updates back to GitHub.
    - `OPENAI_API_KEY`
    - `OPENAI_BASE_URL`
    - `MODEL_NAME`
-   - `REASONING_EFFORT` (optional, for reasoning-capable models; e.g. `medium`)
+   - `DEEPSEEK_THINKING` (`disabled` by default; set `enabled` to use thinking mode)
+   - `REASONING_EFFORT` (used when thinking is enabled; defaults to `low`)
    - `LANGUAGE`
    - `CATEGORIES`
    - `EMAIL`

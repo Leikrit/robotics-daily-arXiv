@@ -3,15 +3,15 @@
   <h1>Embodied AI Daily | 具身智能论文日报</h1>
   <p>面向具身智能、机器人学习、VLA 与世界模型的每日 arXiv 论文检索和 AI 辅助阅读站。</p>
   <p>
-    <a href="https://altman-conquer.github.io/robotics-daily-arXiv/">在线阅读</a> ·
-    <a href="https://github.com/Altman-conquer/robotics-daily-arXiv/actions/workflows/run.yml">运行状态</a> ·
-    <a href="https://github.com/Altman-conquer/robotics-daily-arXiv/issues">问题反馈</a>
+    <a href="https://leikrit.github.io/robotics-daily-arXiv/">在线阅读</a> ·
+    <a href="https://github.com/Leikrit/robotics-daily-arXiv/actions/workflows/run.yml">运行状态</a> ·
+    <a href="https://github.com/Leikrit/robotics-daily-arXiv/issues">问题反馈</a>
   </p>
 </div>
 
 ## 项目定位
 
-这是由 [Altman-conquer](https://github.com/Altman-conquer) 独立维护的具身智能论文日报。项目每天从 `cs.RO`、`cs.AI`、`cs.LG`、`cs.CV` 抓取候选论文，先进行语义主题过滤，再为保留论文生成中文摘要、动机、方法、结果和结论。
+这是 [Leikrit](https://github.com/Leikrit) 基于 [Altman-conquer 的上游项目](https://github.com/Altman-conquer/robotics-daily-arXiv) 独立部署的 DeepSeek Flash 版本。项目每天从 `cs.RO`、`cs.AI`、`cs.LG`、`cs.CV` 抓取候选论文，先进行语义主题过滤，再为保留论文生成中文摘要、动机、方法、结果和结论。
 
 重点覆盖：
 
@@ -34,14 +34,19 @@ GitHub Actions 工作流每天北京时间 `09:30` 自动执行：
 5. 生成 Markdown，并将结果发布到独立的 `data` 分支；
 6. GitHub Pages 从 `main` 分支提供阅读界面。
 
-当前 AI 配置为 `gpt-5.6-luna`，推理强度为 `medium`。工作流设置了并发保护和 `330` 分钟硬超时；相比旧版对所有论文串行处理，主题过滤和并发处理可显著降低运行时间。
+本 fork 默认使用 DeepSeek Flash（API 模型名 `deepseek-flash`），接口为 `https://api.deepseek.com/v1`。默认关闭思考模式以降低日报筛选和摘要的延迟；可将 Actions Variable `DEEPSEEK_THINKING` 改成 `enabled`，并通过 `REASONING_EFFORT` 设置思考强度。工作流保留并发保护和 `330` 分钟硬超时。
 
 ## 部署
 
-仓库需要以下 Actions Secrets：
+在你自己的 fork 中配置：
 
-- `OPENAI_API_KEY`
-- `OPENAI_BASE_URL`
+1. 打开 **Settings > Secrets and variables > Actions > New repository secret**，添加 `DEEPSEEK_API_KEY`，值为你自己的 DeepSeek API key。不要将密钥写入代码或网页。
+2. 在 **Settings > Pages > Build and deployment > Source** 选择 **GitHub Actions**。
+3. 在 **Actions** 启用 fork 的工作流，运行 **Deploy GitHub Pages**。它不需要 API key，只发布静态页面，不会把 Secrets 打包到网站。
+4. 网站默认地址为 `https://<你的用户名>.github.io/<仓库名>/`。页面链接、统计信息和论文数据源会自动切换到你的 fork，而非上游仓库。
+5. 添加 key 后，手动运行 **Embodied AI Daily** 验证每日抓取。之后每天北京时间 09:30 自动更新。
+
+为兼容已有配置，仍支持 `OPENAI_API_KEY` Secret；`DEEPSEEK_API_KEY` 优先。无需添加 base URL Secret，默认已配置为 DeepSeek；如需更换服务，可设置 `OPENAI_BASE_URL` Variable。fork 时请保留 `data` 分支以展示已有公开历史内容；这些继承的解读不代表由 DeepSeek 重新生成，后续任务才使用新模型。
 
 主要 Actions Variables：
 
@@ -49,8 +54,9 @@ GitHub Actions 工作流每天北京时间 `09:30` 自动执行：
 | --- | --- | --- |
 | `CATEGORIES` | `cs.RO,cs.AI,cs.LG,cs.CV` | arXiv 候选类别 |
 | `LANGUAGE` | `Chinese` | 生成语言 |
-| `MODEL_NAME` | `gpt-5.6-luna` | 筛选和摘要模型 |
-| `REASONING_EFFORT` | `medium` | 推理强度 |
+| `MODEL_NAME` | `deepseek-flash` | 筛选和摘要模型 |
+| `DEEPSEEK_THINKING` | `disabled` | Flash 思考模式开关 |
+| `REASONING_EFFORT` | `low` | 开启思考模式时的推理强度 |
 | `AI_MAX_WORKERS` | `6` | 摘要并发数 |
 | `TOPIC_FILTER_ENABLED` | `true` | 启用主题过滤 |
 | `TOPIC_FILTER_MAX_WORKERS` | `3` | 主题筛选并发数 |
